@@ -3,7 +3,7 @@
 `sfmapi-gsplat` is an `sfmapi-plugin-http-v1` container-service plugin for CUDA-backed gsplat radiance-field training.
 
 The service intentionally fails when CUDA, PyTorch, `gsplat`, or an input image dataset is missing. It does not silently fall back to pseudo training.
-The Docker image pins Python 3.10, PyTorch 2.4.1 + CUDA 12.4, and `gsplat` 1.5.3 because that matrix has published prebuilt `gsplat` wheels.
+The Docker image uses PyTorch 2.7.1 + CUDA 12.8 and builds `gsplat` from source for `TORCH_CUDA_ARCH_LIST=12.0`, which supports Blackwell GPUs such as RTX 5090.
 
 ## Endpoints
 
