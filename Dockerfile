@@ -9,7 +9,10 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     TORCH_DEVICE=cuda \
     SFMAPI_GSPLAT_OUTPUT_ROOT=/sfmapi/output \
+    TORCH_HOME=/opt/sfmapi/torch-cache \
     TORCH_CUDA_ARCH_LIST=${TORCH_CUDA_ARCH_LIST} \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics \
     DEBIAN_FRONTEND=noninteractive \
     LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
@@ -27,8 +30,10 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     python -c "import sys, torch; assert sys.version_info >= (3, 10), sys.version; assert torch.__version__.startswith('2.7.1'), torch.__version__; assert torch.version.cuda and torch.version.cuda.startswith('12.8'), torch.version.cuda" \
     && uv pip install --system --no-build-isolation --no-binary gsplat "${GSPLAT_PACKAGE}" \
+    && uv pip install --system "lpips>=0.1.4" \
     && uv pip install --system . \
-    && python -c "import torch, gsplat; assert torch.cuda.is_available() or True; assert hasattr(gsplat, 'rasterization')"
+    && python -c "import lpips; [lpips.LPIPS(net=net) for net in ('alex', 'vgg', 'squeeze')]" \
+    && python -c "import gsplat; assert hasattr(gsplat, 'rasterization')"
 
 EXPOSE 8080
 CMD ["uvicorn", "sfmapi_gsplat.server:app", "--host", "0.0.0.0", "--port", "8080"]

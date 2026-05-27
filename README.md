@@ -3,6 +3,8 @@
 `sfmapi-gsplat` is an `sfmapi-plugin-http-v1` container-service plugin for CUDA-backed gsplat radiance-field training.
 
 The service intentionally fails when CUDA, PyTorch, `gsplat`, or an input image dataset is missing. It does not silently fall back to pseudo training.
+When `backend_options.dataset_path` points to a COLMAP dataset, training uses the sparse model and reports interval-based multi-image metrics (`eval_protocol=colmap_interval`).
+The old one-image CUDA smoke path is available only when `single_image_smoke=true`.
 The Docker image uses PyTorch 2.7.1 + CUDA 12.8 and builds `gsplat` from source for `TORCH_CUDA_ARCH_LIST=12.0`, which supports Blackwell GPUs such as RTX 5090.
 
 ## Endpoints
@@ -49,16 +51,18 @@ docker run --rm --gpus all -p 127.0.0.1:8098:8080 \
     "method": "gsplat.train.default",
     "max_steps": 3000,
     "backend_options": {
-      "dataset_path": "/data/bicycle/images",
+      "dataset_path": "/data/bicycle",
+      "image_root": "/data/bicycle/images_2",
       "output_path": "/sfmapi/output",
-      "target_size": 256,
-      "num_gaussians": 2048
+      "target_size": 384,
+      "num_gaussians": 1000000,
+      "test_every": 8
     }
   }
 }
 ```
 
-For a CUDA smoke test without a dataset, set `"allow_synthetic_target": true`; this remains explicit and is never the default.
+For a CUDA smoke test without a COLMAP dataset, set `"single_image_smoke": true` and either provide one target image or set `"allow_synthetic_target": true`; this remains explicit and is never the default.
 
 ## Development
 

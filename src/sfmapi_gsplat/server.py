@@ -7,7 +7,7 @@ from fastapi import FastAPI
 
 from sfmapi_gsplat import __version__
 from sfmapi_gsplat.protocol import PROTOCOL, PROTOCOL_VERSION, ExecuteRequest, ExecuteResponse
-from sfmapi_gsplat.trainer import runtime_info, train
+from sfmapi_gsplat.trainer import evaluate, runtime_info, train
 
 app = FastAPI(title="sfmapi-gsplat", version=__version__)
 
@@ -32,7 +32,7 @@ def version() -> dict[str, Any]:
 @app.post("/execute", response_model=ExecuteResponse)
 def execute(request: ExecuteRequest) -> ExecuteResponse:
     try:
-        outputs = train(request)
+        outputs = evaluate(request) if request.task_kind == "radiance_eval" else train(request)
     except Exception as exc:
         return ExecuteResponse(status="failed", error=f"{type(exc).__name__}: {exc}")
     return ExecuteResponse(status="succeeded", outputs=outputs)
@@ -52,4 +52,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

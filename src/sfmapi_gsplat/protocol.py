@@ -12,8 +12,8 @@ class ExecuteRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     protocol: Literal["sfmapi-plugin-http-v1"]
-    task_kind: Literal["radiance_train"]
-    capability: Literal["radiance.train"]
+    task_kind: Literal["radiance_train", "radiance_eval"]
+    capability: Literal["radiance.train", "radiance.evaluate"]
     tenant_id: str | None = None
     job_id: str | None = None
     task_id: str | None = None
@@ -28,4 +28,3 @@ class ExecuteResponse(BaseModel):
     status: Literal["succeeded", "failed"]
     outputs: dict[str, Any] | None = None
     error: str | None = None
-
