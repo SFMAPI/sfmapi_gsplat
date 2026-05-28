@@ -144,8 +144,10 @@ MANIFEST: dict[str, Any] = {
 }
 
 
-class Plugin:
-    manifest = MANIFEST
+# gsplat integrates via container_service rather than registering an
+# in-process backend factory, so we use the canonical Plugin's
+# manifest-only mode (backend_name + backend_factory default to None
+# and register() no-ops). `Plugin` stays exported under the same name.
+from sfmapi.backends import Plugin  # noqa: E402
 
-
-plugin = Plugin()
+plugin = Plugin(manifest=MANIFEST)
