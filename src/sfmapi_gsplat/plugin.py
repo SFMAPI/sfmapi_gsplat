@@ -6,8 +6,8 @@ MANIFEST: dict[str, Any] = {
     "plugin_id": "gsplat",
     "display_name": "gsplat",
     "description": (
-        "3D Gaussian Splatting plugin for gsplat training and PLY snapshot export "
-        "through the sfmapi radiance-field contract."
+        "3D Gaussian Splatting plugin for gsplat training, evaluation, and PLY "
+        "snapshot export through the sfmapi radiance-field contract."
     ),
     "package_name": "sfmapi-gsplat",
     "github_url": "https://github.com/SFMAPI/sfmapi_gsplat.git",
