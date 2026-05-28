@@ -37,12 +37,23 @@ def runtime_info() -> dict[str, Any]:
     return info
 
 
+def _apply_canonical_options(options: dict[str, Any]) -> dict[str, Any]:
+    # Canonical radiance.train config-schema names -> gsplat's native keys.
+    # num_gaussians is already native; map max_resolution -> target_size.
+    # Back-fill only: an explicit native key always wins.
+    resolved = dict(options)
+    if "max_resolution" in resolved and "target_size" not in resolved:
+        resolved["target_size"] = resolved["max_resolution"]
+    return resolved
+
+
 def train(request: ExecuteRequest) -> dict[str, Any]:
     started = time.perf_counter()
     torch, rasterization = _require_cuda_gsplat()
     spec = request.spec
     inputs = request.inputs
     options = spec.get("backend_options") if isinstance(spec.get("backend_options"), dict) else {}
+    options = _apply_canonical_options(options)
     radiance_field_id = _required_str(inputs, "radiance_field_id")
     project_id = _required_str(inputs, "project_id")
     max_steps = int(spec.get("max_steps") or 3000)
@@ -980,6 +991,9 @@ def _snapshot_path(
     root = Path(
         str(
             options.get("output_path")
+            # Unified cross-plugin convention; SFMAPI_GSPLAT_OUTPUT_ROOT kept
+            # for back-compat so this plugin honors the same env as its siblings.
+            or os.environ.get("SFMAPI_PLUGIN_OUTPUT_ROOT")
             or os.environ.get("SFMAPI_GSPLAT_OUTPUT_ROOT")
             or "/sfmapi/output"
         )

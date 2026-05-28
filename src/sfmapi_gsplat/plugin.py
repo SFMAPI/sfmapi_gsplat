@@ -101,7 +101,7 @@ MANIFEST: dict[str, Any] = {
         "radiance.export",
     ],
     "backend_actions": ["gsplat.*"],
-    "config_schemas": ["gsplat.train"],
+    "config_schemas": ["radiance.train"],
     "artifact_contracts": [
         "sfmapi.radiance.snapshot.v1",
         "sfmapi.radiance.metrics.v1",
