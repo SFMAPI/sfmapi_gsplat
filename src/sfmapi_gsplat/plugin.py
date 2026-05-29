@@ -107,7 +107,7 @@ MANIFEST: dict[str, Any] = {
         "sfmapi.radiance.metrics.v1",
         "sfmapi.radiance.variant.ply.v1",
     ],
-    "licenses": [{"name": "AGPL-3.0-or-later"}],
+    "licenses": [{"name": "Apache-2.0"}],
     "upstream_projects": [
         {
             "name": "gsplat",
