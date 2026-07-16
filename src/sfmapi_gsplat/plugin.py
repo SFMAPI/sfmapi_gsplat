@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 MANIFEST: dict[str, Any] = {
+    "schema_version": 1,
     "plugin_id": "gsplat",
     "display_name": "gsplat",
     "description": (
@@ -22,7 +23,6 @@ MANIFEST: dict[str, Any] = {
                 "radiance.metrics.psnr",
                 "radiance.metrics.ssim",
                 "radiance.metrics.lpips",
-                "radiance.export",
             ],
             "backend_actions": ["gsplat.*"],
             "priority_hint": 70,
@@ -98,7 +98,6 @@ MANIFEST: dict[str, Any] = {
         "radiance.metrics.psnr",
         "radiance.metrics.ssim",
         "radiance.metrics.lpips",
-        "radiance.export",
     ],
     "backend_actions": ["gsplat.*"],
     "config_schemas": ["radiance.train"],
