@@ -1,10 +1,11 @@
 [project]
 name = "sfmapi-gsplat"
-version = "0.1.0"
+version = "0.0.1"
 description = "sfmapi container-service plugin for CUDA gsplat radiance training."
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.12,<3.13"
 dependencies = [
+    "sfmapi>=0.0.1,<0.1",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "pydantic>=2.9",
@@ -37,6 +38,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sfmapi_gsplat"]
+
+[tool.uv.sources]
+sfmapi = { path = "../sfmapi", editable = true }
 
 [tool.ruff]
 line-length = 100
