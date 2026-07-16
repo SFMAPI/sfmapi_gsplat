@@ -5,10 +5,10 @@ description = "sfmapi container-service plugin for CUDA gsplat radiance training
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    # fastapi + pydantic arrive via the sfmapi.plugin_service kit's own deps;
+    # uvicorn stays explicit because server.main() imports it directly.
     "sfmapi>=0.0.1,<0.1",
-    "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
-    "pydantic>=2.9",
     "pillow>=10",
     "numpy>=1.26,<3",
     "pycolmap>=3.11",

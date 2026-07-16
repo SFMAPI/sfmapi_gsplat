@@ -4,9 +4,11 @@ import subprocess
 
 import pytest
 from fastapi.testclient import TestClient
+from sfmapi.plugin_service import PROTOCOL, PROTOCOL_VERSION
 
 import sfmapi_gsplat.server as server
 import sfmapi_gsplat.trainer as trainer
+from sfmapi_gsplat.plugin import MANIFEST
 
 
 def test_health_and_version() -> None:
@@ -18,9 +20,26 @@ def test_health_and_version() -> None:
     assert health.status_code == 200
     assert health.json() == {"status": "ok"}
     assert version.status_code == 200
-    assert version.json()["protocol"] == "sfmapi-plugin-http-v1"
-    assert version.json()["protocol_version"] == "1.0"
-    assert version.json()["provider"] == "gsplat"
+    assert version.json()["protocol"] == PROTOCOL
+    assert version.json()["protocol_version"] == PROTOCOL_VERSION == "1.1"
+    assert version.json()["plugin_id"] == "gsplat"
+    assert version.json()["runtime"]["provider"] == "gsplat"
+    assert MANIFEST["runtime_modes"]["container_service"]["protocol_version"] == PROTOCOL_VERSION
+
+
+def test_capabilities_serves_the_manifest_capability_set() -> None:
+    features = TestClient(server.app).get("/capabilities").json()["features"]
+
+    assert features == sorted(MANIFEST["capabilities"])
+
+
+def test_execute_rejects_wrong_protocol() -> None:
+    response = TestClient(server.app).post(
+        "/execute", json={"protocol": "nope", "task_kind": "x"}
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"] == "protocol_mismatch"
 
 
 def test_gpu_runtime_info_reports_visible_gpu(monkeypatch) -> None:
@@ -55,7 +74,8 @@ def test_execute_surfaces_missing_cuda_as_plugin_failure(monkeypatch) -> None:
     response = client.post(
         "/execute",
         json={
-            "protocol": "sfmapi-plugin-http-v1",
+            "protocol": PROTOCOL,
+            "protocol_version": PROTOCOL_VERSION,
             "task_kind": "radiance_train",
             "capability": "radiance.train",
             "provider": "gsplat",
@@ -75,7 +95,8 @@ def test_execute_rejects_wrong_provider() -> None:
     response = client.post(
         "/execute",
         json={
-            "protocol": "sfmapi-plugin-http-v1",
+            "protocol": PROTOCOL,
+            "protocol_version": PROTOCOL_VERSION,
             "task_kind": "radiance_train",
             "capability": "radiance.train",
             "provider": "other",
@@ -84,7 +105,10 @@ def test_execute_rejects_wrong_provider() -> None:
         },
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "failed"
+    assert "request.provider must be 'gsplat'" in body["error"]
 
 
 def test_execute_dispatches_radiance_eval(monkeypatch) -> None:
@@ -111,7 +135,8 @@ def test_execute_dispatches_radiance_eval(monkeypatch) -> None:
     response = client.post(
         "/execute",
         json={
-            "protocol": "sfmapi-plugin-http-v1",
+            "protocol": PROTOCOL,
+            "protocol_version": PROTOCOL_VERSION,
             "task_kind": "radiance_eval",
             "capability": "radiance.evaluate",
             "provider": "gsplat",

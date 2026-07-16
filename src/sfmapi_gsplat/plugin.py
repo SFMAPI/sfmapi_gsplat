@@ -41,7 +41,7 @@ MANIFEST: dict[str, Any] = {
         },
         "container_service": {
             "protocol": "sfmapi-plugin-http-v1",
-            "protocol_version": "1.0",
+            "protocol_version": "1.1",
             "service": {
                 "default_url": "http://127.0.0.1:8098",
                 "url_env": "SFMAPI_GSPLAT_SERVICE_URL",

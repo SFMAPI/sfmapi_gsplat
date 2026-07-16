@@ -4,14 +4,30 @@ import json
 import os
 import subprocess
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 from PIL import Image
 
-from sfmapi_gsplat.protocol import ExecuteRequest
 
+@dataclass(frozen=True)
+class ExecuteRequest:
+    """One ``/execute`` task as the ``sfmapi.plugin_service`` kit hands it to
+    the executor (protocol envelope already validated and stripped)."""
+
+    task_kind: str
+    capability: str = ""
+    inputs: dict[str, Any] = field(default_factory=dict)
+    spec: dict[str, Any] = field(default_factory=dict)
+    tenant_id: str = ""
+    job_id: str = ""
+    task_id: str = ""
+    provider: str = ""
+
+
+PROVIDER = "gsplat"
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
 
 

@@ -3,39 +3,52 @@ from __future__ import annotations
 import argparse
 from typing import Any
 
-from fastapi import FastAPI
+from sfmapi.plugin_service import ManifestBackend, build_plugin_server
 
 from sfmapi_gsplat import __version__
-from sfmapi_gsplat.protocol import PROTOCOL, PROTOCOL_VERSION, ExecuteRequest, ExecuteResponse
-from sfmapi_gsplat.trainer import evaluate, runtime_info, train
-
-app = FastAPI(title="sfmapi-gsplat", version=__version__)
+from sfmapi_gsplat.plugin import MANIFEST
+from sfmapi_gsplat.trainer import PROVIDER, ExecuteRequest, evaluate, runtime_info, train
 
 
-@app.get("/healthz")
-def healthz() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.get("/version")
-def version() -> dict[str, Any]:
-    return {
-        "protocol": PROTOCOL,
-        "protocol_version": PROTOCOL_VERSION,
-        "provider": "gsplat",
-        "plugin": "sfmapi-gsplat",
-        "version": __version__,
-        "runtime": runtime_info(),
-    }
-
-
-@app.post("/execute", response_model=ExecuteResponse)
-def execute(request: ExecuteRequest) -> ExecuteResponse:
+def execute_task(
+    *,
+    task_kind: str,
+    capability: str,
+    inputs: dict[str, Any],
+    spec: dict[str, Any],
+    tenant_id: str,
+    job_id: str,
+    task_id: str,
+    provider: str,
+) -> dict[str, Any]:
+    """Kit executor: dispatch one task to the trainer, mapping trainer errors
+    onto the ``status: failed`` result the sfmapi worker expects."""
+    request = ExecuteRequest(
+        task_kind=task_kind,
+        capability=capability,
+        inputs=inputs,
+        spec=spec,
+        tenant_id=tenant_id,
+        job_id=job_id,
+        task_id=task_id,
+        provider=provider,
+    )
     try:
-        outputs = evaluate(request) if request.task_kind == "radiance_eval" else train(request)
+        if provider != PROVIDER:
+            raise ValueError(f"request.provider must be {PROVIDER!r}")
+        outputs = evaluate(request) if task_kind == "radiance_eval" else train(request)
     except Exception as exc:
-        return ExecuteResponse(status="failed", error=f"{type(exc).__name__}: {exc}")
-    return ExecuteResponse(status="succeeded", outputs=outputs)
+        return {"status": "failed", "error": f"{type(exc).__name__}: {exc}"}
+    return {"status": "succeeded", "outputs": outputs}
+
+
+app = build_plugin_server(
+    ManifestBackend(MANIFEST, version=__version__),
+    plugin_id=MANIFEST["plugin_id"],
+    package_version=__version__,
+    executor=execute_task,
+    runtime_info=runtime_info,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
