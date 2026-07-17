@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **MOVED.** Development continued and now lives in the SceneAPI org as part of the merged radiance family: <https://github.com/SceneAPI/3DGS>. This repository holds the final sfmapi-era state for history and will be archived.
+
 # sfmapi-gsplat
 
 `sfmapi-gsplat` is an `sfmapi-plugin-http-v1` container-service plugin for CUDA-backed gsplat radiance-field training.
